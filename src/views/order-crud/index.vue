@@ -57,7 +57,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button type="primary">确 定</el-button>
       </div>
     </el-dialog>
     <!-- add order -->
@@ -84,7 +84,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button type="primary" @click="submitNewOrder">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -92,7 +92,7 @@
 
 <style lang="scss" scoped>
 .el-button {
-  margin: 0 .5rem;
+  margin: 0 0.5rem;
 }
 </style>
 
@@ -117,8 +117,7 @@ export default {
         name: '',
         num: '',
         price: '',
-        desc: '',
-        toatalPrice: null
+        desc: ''
       }
     }
   },
@@ -137,30 +136,60 @@ export default {
     })
   },
   methods: {
+    // 编辑订单
     handleEdit(index, row) {
       this.form = Object.assign({}, row)
       this.dialogFormVisible = true
     },
+    // 删除订单
     handleDelete(index, row) {
-      console.log(index, row)
+      // console.log(`删除订单方法执行${row}`)
       this.$axios
         .get('delorder', {
           params: { orderid: row._id, ordername: row.name }
         })
         .then(response => {
-          console.log(response)
+          console.log('删除后的返回值：' + response)
         })
+      location.reload()
+      // console.log(row)
+      // this.tableData.splice(row, 1)
     },
-    handleAdd() {
-      console.log('add order')
-      this.dialogFormVisible = true
+    // 提交新订单
+    submitNewOrder(newOrderForm) {
+      newOrderForm = this.newOrderForm
+      console.log('test' + newOrderForm)
+      if (newOrderForm.id === '') {
+        this.warmingNoitce()
+      } else {
+        console.log('test2' + newOrderForm)
+        this.$axios
+          .post('addneworder', {
+            data: { newOrderForm: newOrderForm }
+          })
+          .then(response => {
+            if (response.status) {
+              console.log(response)
+              this.dialogAddOrderVisible = false
+              console.log(`新增订单id:${newOrderForm.id}`)
+              console.log('新增订单成功')
+              location.reload()
+            }
+          })
+      }
     },
-    submit() {
-      console.log('添加成功')
-    },
+    // 增加订单的dialog
     addOrder() {
-      console.log('add order')
+      // console.log('add order')
       this.dialogAddOrderVisible = true
+    },
+    // 警告提示
+    warmingNoitce() {
+      this.$notify({
+        title: '警告',
+        message: 'id 不能为空',
+        type: 'warning'
+      })
     }
   }
 }
