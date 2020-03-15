@@ -152,7 +152,7 @@ export default {
           console.log('删除后的返回值：' + response)
         })
       location.reload()
-      // console.log(row)
+      console.log(row)
       // this.tableData.splice(row, 1)
     },
     // 提交新订单
