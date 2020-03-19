@@ -65,27 +65,36 @@ export const constantRoutes = [
       {
         path: 'orderlists',
         name: 'Order',
-        component: () => import('@/views/orderlists/index'),
-        meta: { title: '订单列表', icon: 'table' }
+        component: () => import('@/views/order-admin/orderlists/index'),
+        meta: { title: '订单列表', icon: 'form' }
       },
       {
-        path: 'orderadmin',
+        path: 'orderedit',
         name: 'orderadmin',
-        component: () => import('@/views/order-crud/index'),
-        meta: { title: '订单处理', icon: 'tree' }
+        component: () => import('@/views/order-admin/orderedit/index'),
+        meta: { title: '订单处理', icon: 'form' }
       }
     ]
   },
 
   {
-    path: '/form',
+    path: '/distribution',
     component: Layout,
+    redirect: '/distribution/distribution-list',
+    name: 'Distribution',
+    meta: { title: '物流管理', icon: 'example' },
     children: [
       {
-        path: 'index',
+        path: 'dis-list',
+        name: 'Distribution-list',
+        component: () => import('@/views/distribution/dis-list/index'),
+        meta: { title: '物流列表', icon: 'form' }
+      },
+      {
+        path: 'dis-edit',
         name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form' }
+        component: () => import('@/views/distribution/dis-edit/index'),
+        meta: { title: '物流编辑', icon: 'form' }
       }
     ]
   },
