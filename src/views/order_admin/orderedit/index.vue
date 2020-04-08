@@ -9,6 +9,9 @@
     <el-button type="primary">
       <i class="el-icon-download">导出</i>
     </el-button>
+    <el-button type="primary" class="refresh" @click="refresh">
+      <i class="el-icon-refresh">刷新</i>
+    </el-button>
     <el-col :span="8">
       <el-input v-model="search" placeholder="输入关键字搜索" />
     </el-col>
@@ -31,7 +34,7 @@
         </template>
         <template slot-scope="scope">
           <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(scope.$index, tableData)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -94,6 +97,9 @@
 .el-button {
   margin: 0 0.5rem;
 }
+.el-button.refresh {
+  float: right;
+}
 </style>
 
 <script>
@@ -143,17 +149,17 @@ export default {
     },
     // 删除订单
     handleDelete(index, row) {
-      // console.log(`删除订单方法执行${row}`)
+      console.log(`删除订单，第${index + 1}行`)
+      console.log(`row: `, row)
       this.$axios
         .get('delorder', {
-          params: { orderid: row._id, ordername: row.name }
+          params: { orderid: row[index]._id, ordername: row[index].name }
         })
         .then(response => {
-          console.log('删除后的返回值：' + response)
+          console.log('删除后的返回值：', response)
         })
-      location.reload()
-      console.log(row)
-      // this.tableData.splice(row, 1)
+      row.splice(index, 1)
+      // location.reload()
     },
     // 提交新订单
     submitNewOrder(newOrderForm) {
@@ -189,6 +195,12 @@ export default {
         title: '警告',
         message: 'id 不能为空',
         type: 'warning'
+      })
+    },
+    // 刷新数据
+    refresh() {
+      this.$axios.get('/queryorders').then(response => {
+        this.tableData = response.data
       })
     }
   }

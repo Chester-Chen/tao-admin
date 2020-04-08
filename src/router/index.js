@@ -59,19 +59,19 @@ export const constantRoutes = [
     path: '/order',
     component: Layout,
     redirect: '/order/orderlists',
-    name: 'Example',
+    name: 'Order',
     meta: { title: '订单管理', icon: 'example' },
     children: [
       {
         path: 'orderlists',
-        name: 'Order',
-        component: () => import('@/views/order-admin/orderlists/index'),
+        name: 'Orderlists',
+        component: () => import('@/views/order_admin/orderlists/index'),
         meta: { title: '订单列表', icon: 'form' }
       },
       {
         path: 'orderedit',
-        name: 'orderadmin',
-        component: () => import('@/views/order-admin/orderedit/index'),
+        name: 'Orderedit',
+        component: () => import('@/views/order_admin/orderedit/index'),
         meta: { title: '订单处理', icon: 'form' }
       }
     ]
@@ -80,21 +80,35 @@ export const constantRoutes = [
   {
     path: '/distribution',
     component: Layout,
-    redirect: '/distribution/distribution-list',
+    redirect: '/distribution/distribution_list',
     name: 'Distribution',
     meta: { title: '物流管理', icon: 'example' },
     children: [
       {
-        path: 'dis-list',
-        name: 'Distribution-list',
-        component: () => import('@/views/distribution/dis-list/index'),
+        path: 'dis_list',
+        name: 'Distribution_list',
+        component: () => import('@/views/distribution/dis_list/index'),
         meta: { title: '物流列表', icon: 'form' }
       },
       {
-        path: 'dis-edit',
-        name: 'Form',
-        component: () => import('@/views/distribution/dis-edit/index'),
+        path: 'dis_edit',
+        name: 'Dis_edit',
+        component: () => import('@/views/distribution/dis_edit/index'),
         meta: { title: '物流编辑', icon: 'form' }
+      }
+    ]
+  },
+  {
+    path: '/users',
+    component: Layout,
+    name: 'Users',
+    meta: { title: '用户管理', icon: 'example' },
+    children: [
+      {
+        path: 'users_admin',
+        name: 'Users_admin',
+        component: () => import('@/views/users_admin/index'),
+        meta: { title: '用户管理', icon: 'form' }
       }
     ]
   },
