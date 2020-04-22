@@ -39,9 +39,12 @@
       </el-table-column>
     </el-table>
 
-    <!-- dialog -->
+    <!-- edit dialog -->
     <el-dialog title="编辑" :visible.sync="dialogFormVisible">
       <el-form :model="form">
+        <el-form-item label="_id" :label-width="formLabelWidth">
+          <el-input v-model="form._id" autocomplete="off" :disabled="true" />
+        </el-form-item>
         <el-form-item label="id" :label-width="formLabelWidth">
           <el-input v-model="form.id" autocomplete="off" />
         </el-form-item>
@@ -60,10 +63,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary">确 定</el-button>
+        <el-button type="primary" @click="updateOrderByOrderid">确认修改</el-button>
       </div>
     </el-dialog>
-    <!-- add order -->
+    <!-- add order dialog-->
     <el-dialog title="添加" :visible.sync="dialogAddOrderVisible">
       <el-form :model="newOrderForm">
         <el-form-item label="id" :label-width="formLabelWidth">
@@ -112,6 +115,7 @@ export default {
       dialogAddOrderVisible: false,
       formLabelWidth: '120px',
       form: {
+        _id: '',
         id: '',
         name: '',
         num: '',
@@ -179,7 +183,7 @@ export default {
               this.dialogAddOrderVisible = false
               console.log(`新增订单id:${newOrderForm.id}`)
               console.log('新增订单成功')
-              location.reload()
+              // location.reload()
             }
           })
       }
@@ -202,6 +206,17 @@ export default {
       this.$axios.get('/queryorders').then(response => {
         this.tableData = response.data
       })
+    },
+    // 更改订单信息
+    updateOrderByOrderid(row) {
+      const form = this.form
+      this.$axios.post('/update_order_by_orderid', { form })
+        .then((res) => {
+          if (res.data.msg === 'success' && res.status === 200) {
+            console.log('订单数据修改成功啦！')
+            this.dialogFormVisible = false
+          }
+        })
     }
   }
 }
