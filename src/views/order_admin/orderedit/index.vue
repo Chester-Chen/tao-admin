@@ -6,7 +6,7 @@
     <el-button type="primary" @click="addOrder()">
       <i class="el-icon-edit">增加</i>
     </el-button>
-    <el-button type="primary">
+    <el-button type="primary" @click="exportExcel">
       <i class="el-icon-download">导出</i>
     </el-button>
     <el-button type="primary" class="refresh" @click="refresh">
@@ -16,6 +16,8 @@
       <el-input v-model="search" placeholder="输入关键字搜索" />
     </el-col>
     <el-table
+      id="table2Excel"
+      ref="table2Excel"
       :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
       style="width: 100%"
     >
@@ -106,6 +108,8 @@
 </style>
 
 <script>
+import FileSaver from 'file-saver'
+import XLSX from 'xlsx'
 export default {
   data() {
     return {
@@ -217,6 +221,20 @@ export default {
             this.dialogFormVisible = false
           }
         })
+        .then(() => {
+          this.refresh()
+        })
+    },
+    // 导出表格
+    exportExcel() {
+      const wb = XLSX.utils.table_to_book(document.querySelector('#table2Excel'))
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: true, type: 'array' })
+      try {
+        FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), 'orders.xlsx')
+      } catch (e) {
+        if (typeof console !== 'undefined') { console.log(e, wbout) }
+      }
+      return wbout
     }
   }
 }

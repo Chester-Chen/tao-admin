@@ -1,38 +1,26 @@
-## Build Setup
+## 项目介绍
 
-```bash
+基于 Element-template 二次开发的后台管理系统。目前主要包括商品管理、订单管理、物流管理、用户账户管理等。
 
-# install dependency
-npm install
+技术栈：vue + vuex + axios + MongoDB + Koa2
 
-# develop
-npm run dev
-```
 
-This will automatically open http://localhost:9528
+## 安装步骤
 
-## Build
+- clone 项目到本地
 
-```bash
-# build for test environment
-npm run build:stage
+- npm install 下载依赖
 
-# build for production environment
-npm run build:prod
-```
+- npm run dev 运行项目进行开发
 
-## Advanced
+- 访问localhost:9528
 
-```bash
-# preview the release environment effect
-npm run preview
 
-# preview the release environment effect + static resource analysis
-npm run preview -- --report
+## 相关截图
 
-# code format check
-npm run lint
-
-# code format check and auto fix
-npm run lint -- --fix
-```
+![](https://s1.ax1x.com/2020/04/25/J6CNge.png)
+![](https://s1.ax1x.com/2020/04/25/J6Ct3D.png)
+![](https://s1.ax1x.com/2020/04/25/J6CY9O.png)
+![](https://s1.ax1x.com/2020/04/25/J6CG4K.png)
+![](https://s1.ax1x.com/2020/04/25/J6C8N6.png)
+![](https://s1.ax1x.com/2020/04/25/J6PtI0.png)
