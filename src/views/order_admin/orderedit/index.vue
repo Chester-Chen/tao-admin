@@ -9,7 +9,7 @@
     <el-button type="primary" @click="exportExcel">
       <i class="el-icon-download">导出</i>
     </el-button>
-    <el-button type="primary" class="refresh" @click="refresh">
+    <el-button type="primary" class="refresh" @click="refreshByPagination">
       <i class="el-icon-refresh">刷新</i>
     </el-button>
     <el-col :span="8">
@@ -21,8 +21,20 @@
       :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
       style="width: 100%"
     >
+      <!--     <el-table
+      id="table2Excel"
+      ref="table2Excel"
+      :data="tableData.filter(data => !search || data.id.toString().toLowerCase().includes(search.toLowerCase()))"
+      style="width: 100%"
+    > -->
       <el-table-column label="OrdersID" prop="_id" />
       <el-table-column label="Id" prop="id" />
+      <el-table-column label="Date">
+        <template slot-scope="scope">
+          <i class="el-icon-time" />
+          {{ scope.row.date }}
+        </template>
+      </el-table-column>
       <el-table-column label="Name" prop="name" />
       <el-table-column label="Num" prop="num" />
       <el-table-column label="SinglePrice" prop="price" />
@@ -95,6 +107,7 @@
         <el-button type="primary" @click="submitNewOrder">确 定</el-button>
       </div>
     </el-dialog>
+    <Pagination @currentPageChange="currentPageChange" />
   </div>
 </template>
 
@@ -108,12 +121,19 @@
 </style>
 
 <script>
+import Pagination from '@/components/Pagination/index'
 import FileSaver from 'file-saver'
 import XLSX from 'xlsx'
 export default {
+  components: {
+    Pagination
+  },
   data() {
     return {
       tableData: [],
+      paginationForm: {
+        pageNum: 1
+      },
       search: '',
       dialogFormVisible: false,
       dialogAddOrderVisible: false,
@@ -122,8 +142,8 @@ export default {
         _id: '',
         id: '',
         name: '',
-        num: '',
-        singlePrice: '',
+        num: null,
+        singlePrice: null,
         toatalPrice: ''
       },
       newOrderForm: {
@@ -132,6 +152,18 @@ export default {
         num: '',
         price: '',
         desc: ''
+      },
+      notifyPara: {
+        notifyTitle: {
+          success: '成功',
+          error: '错误',
+          warning: '警告'
+        },
+        notifyType: {
+          success: 'success',
+          error: 'error',
+          warning: 'warning'
+        }
       }
     }
   },
@@ -144,9 +176,12 @@ export default {
     }
   },
   created() {
-    this.$axios.get('/queryorders').then(response => {
-      // console.log(response)
-      this.tableData = response.data
+    //     this.$axios.get('/queryorders').then(response => {
+    //   // console.log(response)
+    //   this.tableData = response.data
+    // })
+    this.$axios.get('/queryOrdersByPage').then(response => {
+      this.tableData = response.data.paginationOrders
     })
   },
   methods: {
@@ -167,27 +202,32 @@ export default {
           console.log('删除后的返回值：', response)
         })
       row.splice(index, 1)
-      // location.reload()
     },
     // 提交新订单
     submitNewOrder(newOrderForm) {
       newOrderForm = this.newOrderForm
-      console.log('test' + newOrderForm)
       if (newOrderForm.id === '') {
-        this.warmingNoitce()
+        const msg = 'id 不能为空'
+        this.warmingNoitce(this.notifyPara.notifyTitle.warning, msg, this.notifyPara.notifyType.warning)
       } else {
-        console.log('test2' + newOrderForm)
         this.$axios
           .post('addneworder', {
             data: { newOrderForm: newOrderForm }
           })
           .then(response => {
-            if (response.status) {
-              console.log(response)
+            if (response.data.status === 200) {
+              const msg = response.data.msg
+              // console.log(msg)
               this.dialogAddOrderVisible = false
-              console.log(`新增订单id:${newOrderForm.id}`)
-              console.log('新增订单成功')
-              // location.reload()
+              this.warmingNoitce(this.notifyPara.notifyTitle.success, msg, this.notifyPara.notifyType.success)
+              this.refresh()
+              console.log(`新增订单id:${newOrderForm.id}, 新增订单成功`)
+            } else if (response.data.status === 409) {
+              const msg = response.data.msg
+              // console.log(msg)
+              this.dialogAddOrderVisible = false
+              this.warmingNoitce(this.notifyPara.notifyTitle.error, msg, this.notifyPara.notifyType.error)
+              console.log(`新增订单id:${newOrderForm.id}, 新增订单失败`)
             }
           })
       }
@@ -198,11 +238,11 @@ export default {
       this.dialogAddOrderVisible = true
     },
     // 警告提示
-    warmingNoitce() {
+    warmingNoitce(title, msg, type) {
       this.$notify({
-        title: '警告',
-        message: 'id 不能为空',
-        type: 'warning'
+        title: title,
+        message: msg,
+        type: type
       })
     },
     // 刷新数据
@@ -211,12 +251,17 @@ export default {
         this.tableData = response.data
       })
     },
+    // 分页刷新数据
+    refreshByPagination() {
+      this.currentPageChange(this.paginationForm.pageNum)
+    },
     // 更改订单信息
     updateOrderByOrderid(row) {
       const form = this.form
-      this.$axios.post('/update_order_by_orderid', { form })
-        .then((res) => {
-          if (res.data.msg === 'success' && res.status === 200) {
+      this.$axios
+        .post('/update_order_by_orderid', { form })
+        .then(res => {
+          if (res.data.title === '成功' && res.data.status === 200) {
             console.log('订单数据修改成功啦！')
             this.dialogFormVisible = false
           }
@@ -227,14 +272,37 @@ export default {
     },
     // 导出表格
     exportExcel() {
-      const wb = XLSX.utils.table_to_book(document.querySelector('#table2Excel'))
-      const wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: true, type: 'array' })
+      const wb = XLSX.utils.table_to_book(
+        document.querySelector('#table2Excel')
+      )
+      const wbout = XLSX.write(wb, {
+        bookType: 'xlsx',
+        bookSST: true,
+        type: 'array'
+      })
       try {
-        FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), 'orders.xlsx')
+        FileSaver.saveAs(
+          new Blob([wbout], { type: 'application/octet-stream' }),
+          'orders.xlsx'
+        )
       } catch (e) {
-        if (typeof console !== 'undefined') { console.log(e, wbout) }
+        if (typeof console !== 'undefined') {
+          console.log(e, wbout)
+        }
       }
       return wbout
+    },
+    // 分页
+    currentPageChange(val) { // val   sonComponent传递的页码值
+      this.$axios.get('/queryOrdersByPage', {
+        params: {
+          pageNum: val
+        }})
+        .then((res) => {
+          console.log(res.data.paginationOrders)
+          this.tableData = res.data.paginationOrders
+          this.paginationForm.pageNum = val
+        })
     }
   }
 }

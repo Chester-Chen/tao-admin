@@ -3,31 +3,31 @@
     <el-button type="primary">
       <i class="el-icon-search">搜索</i>
     </el-button>
-    <el-button type="primary">
+    <el-button type="primary" @click="exportExcel">
       <i class="el-icon-download">导出</i>
     </el-button>
     <el-col :span="8">
       <el-input v-model="search" placeholder="输入关键字搜索" />
     </el-col>
     <el-table
+      id="table2Excel"
       :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
       style="width: 100%"
     >
       <el-table-column label="物流ID" prop="_id" />
       <el-table-column label="商品id" prop="id" />
-      <el-table-column label="用户" prop="name" />
+      <el-table-column label="收件人" prop="accepter" />
       <el-table-column align="right">
         <template slot="header" slot-scope="scope">
           <el-input v-model="search" size="mini" placeholder="输入关键字搜索" />
         </template>
         <template slot-scope="scope">
-          <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button size="mini" @click="showDistribution(scope.$index, scope.row)">状态</el-button>
-          <el-button size="mini" type="danger">删除</el-button>
+          <!-- <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button> -->
+          <el-button size="mini" type="primary" @click="showDistribution(scope.$index, scope.row)">状态</el-button>
+          <!-- <el-button size="mini" type="danger">删除</el-button> -->
         </template>
       </el-table-column>
     </el-table>
-
     <!-- 物流信息修改 -->
     <el-dialog title="编辑物流信息" :visible.sync="dialogEditFormVisible">
       <el-form :model="form">
@@ -69,7 +69,7 @@
         </el-timeline>
       </div>
     </el-dialog>
-
+    <Pagination @currentPageChange="currentPageChange" />
   </div>
 </template>
 
@@ -80,7 +80,14 @@
 </style>
 
 <script>
+import Pagination from '@/components/Pagination/index'
+import FileSaver from 'file-saver'
+import XLSX from 'xlsx'
+
 export default {
+  components: {
+    Pagination
+  },
   data() {
     return {
       tableData: [],
@@ -109,9 +116,9 @@ export default {
     }
   },
   created() {
-    this.$axios.get('/queryorders').then(response => {
+    this.$axios.get('/queryOrdersByPage').then(response => {
       // console.log(response)
-      this.tableData = response.data
+      this.tableData = response.data.paginationOrders
     })
     this.$axios.get('/querydis').then(response => {
       response.data.forEach(element => {
@@ -119,7 +126,6 @@ export default {
         const temp = element.result[0].list
         this.activities.push(temp)
       })
-      console.log(this.activities)
     }
     )
   },
@@ -141,6 +147,28 @@ export default {
         message: 'id 不能为空',
         type: 'warning'
       })
+    },
+    // 导出表格
+    exportExcel() {
+      const wb = XLSX.utils.table_to_book(document.querySelector('#table2Excel'))
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: true, type: 'array' })
+      try {
+        FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), 'distributions.xlsx')
+      } catch (e) {
+        if (typeof console !== 'undefined') { console.log(e, wbout) }
+      }
+      return wbout
+    },
+    // 分页
+    currentPageChange(val) { // val   sonComponent传递的页码值
+      this.$axios.get('/queryOrdersByPage', {
+        params: {
+          pageNum: val
+        }})
+        .then((res) => {
+          console.log(res.data.paginationOrders)
+          this.tableData = res.data.paginationOrders
+        })
     }
   }
 }

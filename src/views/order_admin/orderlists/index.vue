@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-table
       v-loading="listLoading"
-      :data="orders"
+      :data="paginationOrders"
       element-loading-text="Loading"
       border
       fit
@@ -10,6 +10,12 @@
     >
       <el-table-column align="center" label="OrdersID">
         <template slot-scope="scope">{{ scope.row._id }}</template>
+      </el-table-column>
+      <el-table-column align="center" label="Date">
+        <template slot-scope="scope">
+          <i class="el-icon-time" />
+          {{ scope.row.date }}
+        </template>
       </el-table-column>
       <el-table-column align="center" label="ID">
         <template slot-scope="scope">{{ scope.row.id }}</template>
@@ -27,15 +33,30 @@
       </el-table-column>
       <el-table-column align="left" prop="created_at" label="Desc">
         <template slot-scope="scope">
-          <i class="el-icon-time" />
+          <i class="el-icon-bell" />
           <span>{{ scope.row.desc }}</span>
         </template>
       </el-table-column>
     </el-table>
+    <!--     <div class="page">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="100"
+        :current-page="paginationForm.pageNum"
+        @current-change="currentPageChange"
+      />
+    </div> -->
+    <Pagination @currentPageChange="currentPageChange" />
   </div>
 </template>
 
+<style lang="scss">
+
+</style>
+
 <script>
+import Pagination from '@/components/Pagination/index'
 export default {
   filters: {
     statusFilter(status) {
@@ -47,19 +68,44 @@ export default {
       return statusMap[status]
     }
   },
+  components: {
+    Pagination
+  },
   data() {
     return {
       listLoading: true,
-      orders: null
+      orders: null,
+      paginationOrders: null
     }
   },
   created() {
-    this.$axios.get('/queryorders').then(response => {
+    /*     this.$axios.get('/queryorders').then(response => {
       console.log(response)
       this.orders = response.data
       this.listLoading = false
-    })
+    }), */
+    this.$axios.get('/queryOrdersByPage', {
+      params: {
+        pageNum: 1
+      }})
+      .then((res) => {
+        console.log(res.data.paginationOrders)
+        this.paginationOrders = res.data.paginationOrders
+        this.listLoading = false
+      })
   },
-  methods: {}
+  methods: {
+    currentPageChange(val) { // val   sonComponent传递的页码值
+      console.log('parent component got the sonValue: ', val)
+      this.$axios.get('/queryOrdersByPage', {
+        params: {
+          pageNum: val
+        }})
+        .then((res) => {
+          console.log(res.data.paginationOrders)
+          this.paginationOrders = res.data.paginationOrders
+        })
+    }
+  }
 }
 </script>

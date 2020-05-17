@@ -8,8 +8,8 @@ import locale from 'element-ui/lib/locale/lang/zh-CN' // lang i18n
 
 import axios from 'axios'
 
-// 配置全局URL
-// axios.defaults.baseURL = "https://crazybro.top:9980";
+// axios global url config
+// axios.defaults.baseURL = 'http://crazybro.top:3000'
 axios.defaults.baseURL = 'http://localhost:3000'
 // 写入原型
 Vue.prototype.$axios = axios
